@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farmacia - Dashboard</title>
+
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Regla estrictamente requerida para visibilidad de enlaces por rol */
+    .oculto {
+      display: none !important;
+    }
+
+    /* Transformación visual de la lista inyectada dinámicamente por cargarMedicamentos() */
+    #contenidoMedicamentos h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    #contenidoMedicamentos h3::before {
+      content: "\f468"; /* Icono de píldoras de FontAwesome */
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      color: #10b981;
+      font-size: 1.2rem;
+    }
+
+    #contenidoMedicamentos ul {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    #contenidoMedicamentos li {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 1.25rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      color: #334155;
+      font-size: 0.925rem;
+      font-weight: 500;
+    }
+
+    /* Indicador lateral verde esmeralda para las tarjetas */
+    #contenidoMedicamentos li::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, #10b981, #14b8a6);
+      border-radius: 4px 0 0 4px;
+    }
+
+    #contenidoMedicamentos li:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 20px -5px rgba(16, 185, 129, 0.15);
+      border-color: #6ee7b7;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans min-h-screen text-slate-800 antialiased flex flex-col">
+
+  <!-- Navigation Header -->
+  <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        
+        <!-- Izquierda: Marca y Navegación Principal -->
+        <div class="flex items-center gap-8">
+          <a href="dashboard.html" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+              <i class="fa-solid fa-prescription-bottle-medical text-lg"></i>
+            </div>
+            <span class="font-bold text-lg text-white tracking-tight hidden sm:inline">PharmaSystem</span>
+          </a>
+
+          <!-- Enlaces de navegación con IDs preservados -->
+          <div id="navLinks" class="flex items-center gap-1 sm:gap-2">
+            <a href="dashboard.html" class="px-3 py-2 rounded-lg text-sm font-medium bg-slate-800 text-emerald-400 border border-slate-700/60 flex items-center gap-2">
+              <i class="fa-solid fa-house text-xs"></i>
+              <span>Inicio</span>
+            </a>
+            <a href="medicamentos.html" id="linkMedicamentos" class="oculto px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors flex items-center gap-2">
+              <i class="fa-solid fa-pills text-xs"></i>
+              <span>Medicamentos</span>
+            </a>
+            <a href="#" id="linkUsuarios" class="oculto px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors flex items-center gap-2">
+              <i class="fa-solid fa-users text-xs"></i>
+              <span>Usuarios</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Derecha: Perfil de usuario y Logout -->
+        <div class="flex items-center gap-3">
+          <div class="hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 bg-slate-800/80 rounded-full border border-slate-700/80 text-xs text-slate-200">
+            <div class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+              <i class="fa-solid fa-user text-[10px]"></i>
+            </div>
+            <!-- ID "userName" estrictamente preservado -->
+            <span id="userName" class="font-medium text-slate-200">Cargando...</span>
+          </div>
+
+          <!-- Botón Cerrar Sesión con onclick="logout()" preservado -->
+          <a href="#" onclick="logout()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all duration-200 flex items-center gap-1.5 border border-rose-500/20 shadow-sm">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Cerrar Sesión</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- Dashboard Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Banner de Bienvenida -->
+    <div class="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white rounded-3xl p-6 sm:p-8 mb-8 shadow-xl shadow-emerald-600/10">
+      <div class="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute right-20 -bottom-10 w-36 h-36 bg-emerald-300/20 rounded-full blur-xl pointer-events-none"></div>
+
+      <div class="relative z-10 max-w-2xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-emerald-100 text-xs font-medium mb-3 border border-white/15">
+          <i class="fa-solid fa-circle-check text-emerald-300 text-[10px]"></i>
+          <span>Sistema Activo</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">
+          Bienvenido al Sistema de Farmacia
+        </h2>
+        <p class="text-emerald-100/90 text-sm leading-relaxed">
+          Gestiona el inventario de medicamentos, visualiza los stocks disponibles y administra la información del sistema de manera centralizada.
+        </p>
+      </div>
+    </div>
+
+    <!-- Contenedor dinámico (ID "contenidoMedicamentos" estrictamente preservado) -->
+    <section class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80">
+      <div id="contenidoMedicamentos">
+        <!-- Skeleton loader inicial mientras se realiza la consulta al servidor -->
+        <div class="animate-pulse space-y-4">
+          <div class="h-6 bg-slate-200 rounded-md w-1/4 mb-6"></div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="h-28 bg-slate-100 rounded-2xl border border-slate-200"></div>
+            <div class="h-28 bg-slate-100 rounded-2xl border border-slate-200"></div>
+            <div class="h-28 bg-slate-100 rounded-2xl border border-slate-200"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4">
+      <p>&copy; Portal Farmacéutico — Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Script de lógica de backend (se mantiene intacto) -->
+  <script src="app.js"></script>
+
+  <!-- Script de lógica específica del dashboard (se mantiene 100% igual) -->
+  <script>
+    // Lógica específica del dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      const usuario = JSON.parse(localStorage.getItem('usuario'));
+      if (!usuario) return window.location.href = 'index.html';
+      
+      document.getElementById('userName').textContent = `Hola, ${usuario.nombre} (${usuario.rol})`;
+      
+      // Barra de navegación según rol
+      if (usuario.rol === 'admin') {
+        document.getElementById('linkMedicamentos').classList.remove('oculto');
+        document.getElementById('linkUsuarios').classList.remove('oculto');
+      } else if (usuario.rol === 'moderador') {
+        document.getElementById('linkMedicamentos').classList.remove('oculto');
+      }
+      
+      cargarMedicamentos();
+    });
+
+    async function cargarMedicamentos() {
+      const token = localStorage.getItem('token');
+      const res = await fetch('https://api-farmacia-g9bn.onrender.com/api/medicamentos', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('contenidoMedicamentos').innerHTML = 
+          `<h3>Lista de Medicamentos</h3><ul>${data.map(m => `<li>${m.nombre} - S/ ${m.precio} (Stock: ${m.stock}) - Cat: ${m.Categoria?.nombre}</li>`).join('')}</ul>`;
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+      window.location.href = 'index.html';
+    }
+  </script>
+
+</body>
+</html>
