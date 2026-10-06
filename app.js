@@ -1,4 +1,4 @@
-   const API_URL = 'https://api-farmacia-g9bn.onrender.com'; // ⚠️ Cambiar por la URL de tu backend desplegado
+   const API_URL = 'https://api-farmacia-g9bn.onrender.com/api'; // ⚠️ Cambiar por la URL de tu backend desplegado
 
    document.addEventListener('DOMContentLoaded', () => {
      const loginForm = document.getElementById('loginForm');
